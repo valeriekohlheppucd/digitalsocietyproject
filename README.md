@@ -10,17 +10,3 @@ It collects and analyzes public perceptions of governance values (**Equality, Se
 Responses are stored in a connected Google Sheet.  
 An exported version (`responses.csv`) is analyzed using the provided Python script.
 
-## 🐍 Aggregation Script
-Run the following:
-```bash
-python aggregate.py
-
----
-
-## 📝 .gitignore (optional)
-
-```gitignore
-*.csv
-*.png
-*.html
-__pycache__/
