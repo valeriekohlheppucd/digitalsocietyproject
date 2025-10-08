@@ -1,92 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>CivicTrust Values Survey</title>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
-    #plots { display: flex; justify-content: space-around; flex-wrap: wrap; }
-    .plot-container { width: 45%; min-width: 400px; }
-    button { padding: 10px 20px; margin-top: 20px; font-size: 16px; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <h2>Values in Democracy & Governance</h2>
-  <p>Please click once on each plot: one for <b>Today</b>, and one for the <b>Year 2075</b>.</p>
+<html>
+  <head>
+    <title>CivicTrust Values Survey</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  </head>
+  <body>
+    <h2>Balance of Governance Values</h2>
+    <p>Please click inside each triangle to show how you think society balances Equality, Security, and Efficiency.</p>
 
-  <div id="plots">
-    <div class="plot-container">
-      <h3>Present Day</h3>
-      <div id="plotPresent"></div>
-    </div>
-    <div class="plot-container">
-      <h3>2075</h3>
-      <div id="plotFuture"></div>
-    </div>
-  </div>
+    <!-- Plot for Present -->
+    <div id="plot-present" style="width:600px;height:600px;"></div>
 
-  <button onclick="submitData()">Submit Responses</button>
+    <!-- Plot for Future (2075) -->
+    <div id="plot-future" style="width:600px;height:600px;"></div>
 
-  <script>
-    let presentValues = null;
-    let futureValues = null;
+    <!-- Submit button -->
+    <button onclick="submitResponse()">Submit</button>
 
-    function createPlot(divId, callback) {
-      let data = [{
-        type: 'scatterternary',
-        mode: 'markers',
-        a: [], b: [], c: [],
-        marker: { size: 10, color: 'blue' }
-      }];
+    <script>
+      let presentValues = null;
+      let futureValues = null;
 
-      let layout = {
-        ternary: {
-          sum: 100,
-          aaxis: { title: 'Equality', min: 0 },
-          baxis: { title: 'Security', min: 0 },
-          caxis: { title: 'Efficiency', min: 0 }
-        },
-        margin: { t: 30, l: 30, r: 30, b: 30 }
-      };
+      // Create empty ternary plots
+      function createPlot(divId, label, callback) {
+        Plotly.newPlot(divId, [{
+          type: 'scatterternary',
+          mode: 'markers',
+          a: [], b: [], c: []
+        }], {
+          ternary: {
+            aaxis: {title: 'Equality', min: 0, tickangle: 0},
+            baxis: {title: 'Security', min: 0},
+            caxis: {title: 'Efficiency', min: 0}
+          },
+          title: label
+        });
 
-      Plotly.newPlot(divId, data, layout);
-
-      document.getElementById(divId).on('plotly_click', function(event) {
-        let point = event.points[0];
-        let values = { Equality: point.a, Security: point.b, Efficiency: point.c };
-        Plotly.update(divId, { a: [point.a], b: [point.b], c: [point.c] });
-        callback(values);
-      });
-    }
-
-    createPlot("plotPresent", function(v) { presentValues = v; });
-    createPlot("plotFuture", function(v) { futureValues = v; });
-
-    function submitData() {
-      if (!presentValues || !futureValues) {
-        alert("Please click on both plots first.");
-        return;
+        document.getElementById(divId).on('plotly_click', function(data) {
+          const point = data.points[0];
+          if (divId === "plot-present") {
+            presentValues = {Equality: point.a, Security: point.b, Efficiency: point.c};
+          } else {
+            futureValues = {Equality: point.a, Security: point.b, Efficiency: point.c};
+          }
+        });
       }
 
-      let payload = {
-        timestamp: new Date().toISOString(),
-        present: presentValues,
-        future: futureValues
-      };
+      createPlot("plot-present", "Today (2025)", "present");
+      createPlot("plot-future", "Future (2075)", "future");
 
-      // Replace with your Apps Script Web App URL
-      let url = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+      function submitResponse() {
+        if (!presentValues || !futureValues) {
+          alert("Please click on both plots before submitting!");
+          return;
+        }
 
-      fetch(url, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+        const payload = {
+          "Present Equality": presentValues.Equality,
+          "Present Security": presentValues.Security,
+          "Present Efficiency": presentValues.Efficiency,
+          "Future Equality": futureValues.Equality,
+          "Future Security": futureValues.Security,
+          "Future Efficiency": futureValues.Efficiency
+        };
 
-      alert("✅ Thank you! Your response has been submitted.");
-    }
-  </script>
-</body>
+        fetch("YOUR_GOOGLE_APPS_SCRIPT_URL", {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: { "Content-Type": "application/json" }
+        }).then(res => alert("Response submitted!"))
+          .catch(err => alert("Error submitting response"));
+      }
+    </script>
+  </body>
 </html>
