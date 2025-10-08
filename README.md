@@ -4,7 +4,7 @@ This project is part of MIS20070 *Digital Society 2025-26*.
 It collects and analyzes public perceptions of governance values (**Equality, Security, Efficiency**) for today and the year 2075.
 
 ## 🌐 Live Survey
-👉 [Click here to take the survey](https://yourusername.github.io/civictrust-values-survey/)
+👉 [Click here to take the survey](https://forms.gle/SqBKNAGJJERPMeYS9)
 
 ## 📊 Data
 Responses are stored in a connected Google Sheet.  
