@@ -1,76 +1,130 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>CivicTrust Values Survey</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  </head>
-  <body>
-    <h2>Balance of Governance Values</h2>
-    <p>Please click inside each triangle to show how you think society balances Equality, Security, and Efficiency.</p>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CivicTrust Values Survey</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      max-width: 800px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .plot-container {
+      margin: 30px auto;
+      width: 600px;
+      height: 600px;
+    }
+    button {
+      display: block;
+      margin: 20px auto;
+      padding: 12px 24px;
+      font-size: 16px;
+      background: #0073e6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005bb5;
+    }
+    p {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>CivicTrust Values Survey</h1>
+  <p>
+    This survey explores how society balances three key values in governance:
+    <strong>Equality</strong>, <strong>Security</strong>, and <strong>Efficiency</strong>.  
+    Please click inside each triangle to show your view of today (2025) and your prediction for 2075.  
+    Responses are anonymous and used only for academic purposes.
+  </p>
 
-    <!-- Plot for Present -->
-    <div id="plot-present" style="width:600px;height:600px;"></div>
+  <!-- Plot for Present -->
+  <h2>Today (2025)</h2>
+  <div id="plot-present" class="plot-container"></div>
 
-    <!-- Plot for Future (2075) -->
-    <div id="plot-future" style="width:600px;height:600px;"></div>
+  <!-- Plot for Future -->
+  <h2>The Year 2075</h2>
+  <div id="plot-future" class="plot-container"></div>
 
-    <!-- Submit button -->
-    <button onclick="submitResponse()">Submit</button>
+  <!-- Submit button -->
+  <button onclick="submitResponse()">Submit Response</button>
 
-    <script>
-      let presentValues = null;
-      let futureValues = null;
+  <script>
+    let presentValues = null;
+    let futureValues = null;
 
-      // Create empty ternary plots
-      function createPlot(divId, label, callback) {
-        Plotly.newPlot(divId, [{
-          type: 'scatterternary',
-          mode: 'markers',
-          a: [], b: [], c: []
-        }], {
-          ternary: {
-            aaxis: {title: 'Equality', min: 0, tickangle: 0},
-            baxis: {title: 'Security', min: 0},
-            caxis: {title: 'Efficiency', min: 0}
-          },
-          title: label
-        });
+    // Function to create an empty ternary plot
+    function createPlot(divId, label) {
+      Plotly.newPlot(divId, [{
+        type: 'scatterternary',
+        mode: 'markers',
+        a: [],
+        b: [],
+        c: []
+      }], {
+        ternary: {
+          aaxis: {title: 'Equality', min: 0},
+          baxis: {title: 'Security', min: 0},
+          caxis: {title: 'Efficiency', min: 0}
+        },
+        title: {text: label}
+      });
 
-        document.getElementById(divId).on('plotly_click', function(data) {
-          const point = data.points[0];
-          if (divId === "plot-present") {
-            presentValues = {Equality: point.a, Security: point.b, Efficiency: point.c};
-          } else {
-            futureValues = {Equality: point.a, Security: point.b, Efficiency: point.c};
-          }
-        });
-      }
-
-      createPlot("plot-present", "Today (2025)", "present");
-      createPlot("plot-future", "Future (2075)", "future");
-
-      function submitResponse() {
-        if (!presentValues || !futureValues) {
-          alert("Please click on both plots before submitting!");
-          return;
+      // Capture click
+      document.getElementById(divId).on('plotly_click', function(data) {
+        const point = data.points[0];
+        if (divId === "plot-present") {
+          presentValues = {Equality: point.a, Security: point.b, Efficiency: point.c};
+        } else {
+          futureValues = {Equality: point.a, Security: point.b, Efficiency: point.c};
         }
+        alert(`${label} values selected: E=${point.a}, S=${point.b}, F=${point.c}`);
+      });
+    }
 
-        const payload = {
-          "Present Equality": presentValues.Equality,
-          "Present Security": presentValues.Security,
-          "Present Efficiency": presentValues.Efficiency,
-          "Future Equality": futureValues.Equality,
-          "Future Security": futureValues.Security,
-          "Future Efficiency": futureValues.Efficiency
-        };
+    // Create both plots
+    createPlot("plot-present", "Balance of Values Today (2025)");
+    createPlot("plot-future", "Balance of Values in 2075");
 
-        fetch("https://script.google.com/a/macros/ucdconnect.ie/s/AKfycbwiTv-MFMkyBh5_7tYwrMtSpM7YAeo1xQMrgDz_q6aUmcExxiXQ7g48y8TPZD67_ILQuw/exec", {
-          method: "POST",
-          body: JSON.stringify(payload),
-          headers: { "Content-Type": "application/json" }
-        }).then(res => alert("Response submitted!"))
-          .catch(err => alert("Error submitting response"));
+    // Submit function
+    function submitResponse() {
+      if (!presentValues || !futureValues) {
+        alert("⚠️ Please click on BOTH plots before submitting!");
+        return;
       }
-    </script>
-  </body>
+
+      const payload = {
+        "Present Equality": presentValues.Equality,
+        "Present Security": presentValues.Security,
+        "Present Efficiency": presentValues.Efficiency,
+        "Future Equality": futureValues.Equality,
+        "Future Security": futureValues.Security,
+        "Future Efficiency": futureValues.Efficiency
+      };
+
+      fetch("https://script.google.com/a/macros/ucdconnect.ie/s/AKfycbwiTv-MFMkyBh5_7tYwrMtSpM7YAeo1xQMrgDz_q6aUmcExxiXQ7g48y8TPZD67_ILQuw/exec", {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" }
+      }).then(res => {
+        if (res.ok) {
+          alert("✅ Response submitted! Thank you.");
+          // Reset values after submission
+          presentValues = null;
+          futureValues = null;
+        } else {
+          alert("⚠️ Error submitting response.");
+        }
+      }).catch(err => alert("⚠️ Network error: " + err));
+    }
+  </script>
+</body>
 </html>
