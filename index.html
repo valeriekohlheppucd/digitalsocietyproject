@@ -57,21 +57,13 @@
   <!-- Submit button -->
   <button onclick="submitResponse()">Submit Response</button>
 
-<script>
-  <script>
+   <script>
   let presentValues = null;
   let futureValues = null;
 
   function createPlot(divId, label) {
-    Plotly.newPlot(divId, [{
-      type: 'scatterternary',
-      mode: 'markers',
-      a: [],
-      b: [],
-      c: [],
-      marker: { size: 12, color: 'blue' },
-      name: 'Selection'
-    }], {
+    // Start with an empty ternary diagram
+    Plotly.newPlot(divId, [], {
       ternary: {
         aaxis: { title: 'Equality', min: 0 },
         baxis: { title: 'Security', min: 0 },
@@ -80,7 +72,7 @@
       title: { text: label }
     });
 
-    // Register click
+    // Register click handler
     document.getElementById(divId).on('plotly_click', function(data) {
       const pt = data.points[0];
       const selection = { Equality: pt.a, Security: pt.b, Efficiency: pt.c };
@@ -91,15 +83,17 @@
         futureValues = selection;
       }
 
-      // Update the plot with the clicked marker
+      // Clear any previous marker and add the new one
       Plotly.react(divId, [{
         type: 'scatterternary',
         mode: 'markers',
         a: [pt.a],
         b: [pt.b],
         c: [pt.c],
-        marker: { size: 12, color: 'red' },
-        name: 'Your Choice'
+        marker: { size: 12, color: 'red', symbol: 'circle' },
+        name: 'Your Choice',
+        text: [`Equality=${pt.a.toFixed(2)}, Security=${pt.b.toFixed(2)}, Efficiency=${pt.c.toFixed(2)}`],
+        hoverinfo: 'text'
       }], {
         ternary: {
           aaxis: { title: 'Equality', min: 0 },
@@ -113,6 +107,7 @@
     });
   }
 
+  // Create both plots
   createPlot("plot-present", "Balance of Values Today (2025)");
   createPlot("plot-future", "Balance of Values in 2075");
 
@@ -131,7 +126,7 @@
       "Future Efficiency": futureValues.Efficiency
     };
 
-    fetch("https://script.google.com/macros/s/AKfycbzVkOjwbLgd8UGXAujtNlmSshA2Js3a0QgOs0NhpSNPR7F63ARzXz_W2cBjSXUMfgVyFg/exec", {
+    fetch("YOUR_GOOGLE_APPS_SCRIPT_URL_HERE", {
       method: "POST",
       body: JSON.stringify(payload),
       headers: { "Content-Type": "application/json" }
@@ -149,7 +144,6 @@
     .catch(err => alert("⚠️ Network error: " + err));
   }
 </script>
-
 
 </body>
 </html>
