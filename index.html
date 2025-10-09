@@ -57,13 +57,21 @@
   <!-- Submit button -->
   <button onclick="submitResponse()">Submit Response</button>
 
-   <script>
+<script>
   let presentValues = null;
   let futureValues = null;
 
   function createPlot(divId, label) {
-    // Start with an empty ternary diagram
-    Plotly.newPlot(divId, [], {
+    // Start with a "dummy" trace so the ternary axes show up
+    Plotly.newPlot(divId, [{
+      type: 'scatterternary',
+      mode: 'markers',
+      a: [],
+      b: [],
+      c: [],
+      marker: { size: 12, color: 'rgba(0,0,0,0)' }, // invisible
+      showlegend: false
+    }], {
       ternary: {
         aaxis: { title: 'Equality', min: 0 },
         baxis: { title: 'Security', min: 0 },
@@ -83,8 +91,8 @@
         futureValues = selection;
       }
 
-      // Clear any previous marker and add the new one
-      Plotly.react(divId, [{
+      // Add or update a red dot for the clicked location
+      Plotly.addTraces(divId, {
         type: 'scatterternary',
         mode: 'markers',
         a: [pt.a],
@@ -94,14 +102,10 @@
         name: 'Your Choice',
         text: [`Equality=${pt.a.toFixed(2)}, Security=${pt.b.toFixed(2)}, Efficiency=${pt.c.toFixed(2)}`],
         hoverinfo: 'text'
-      }], {
-        ternary: {
-          aaxis: { title: 'Equality', min: 0 },
-          baxis: { title: 'Security', min: 0 },
-          caxis: { title: 'Efficiency', min: 0 }
-        },
-        title: { text: label }
       });
+
+      // Ensure only one dot is shown (remove older ones if more than 2 traces)
+      Plotly.deleteTraces(divId, 1); 
 
       console.log(`✅ ${label} selected:`, selection);
     });
@@ -126,7 +130,7 @@
       "Future Efficiency": futureValues.Efficiency
     };
 
-    fetch("YOUR_GOOGLE_APPS_SCRIPT_URL_HERE", {
+    fetch("https://script.google.com/macros/s/AKfycbzVkOjwbLgd8UGXAujtNlmSshA2Js3a0QgOs0NhpSNPR7F63ARzXz_W2cBjSXUMfgVyFg/exec", {
       method: "POST",
       body: JSON.stringify(payload),
       headers: { "Content-Type": "application/json" }
@@ -144,6 +148,7 @@
     .catch(err => alert("⚠️ Network error: " + err));
   }
 </script>
+
 
 </body>
 </html>
