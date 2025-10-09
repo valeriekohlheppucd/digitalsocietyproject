@@ -58,6 +58,7 @@
   <button onclick="submitResponse()">Submit Response</button>
 
 <script>
+  <script>
   let presentValues = null;
   let futureValues = null;
 
@@ -67,14 +68,16 @@
       mode: 'markers',
       a: [],
       b: [],
-      c: []
+      c: [],
+      marker: { size: 12, color: 'blue' },
+      name: 'Selection'
     }], {
       ternary: {
-        aaxis: {title: 'Equality', min: 0},
-        baxis: {title: 'Security', min: 0},
-        caxis: {title: 'Efficiency', min: 0}
+        aaxis: { title: 'Equality', min: 0 },
+        baxis: { title: 'Security', min: 0 },
+        caxis: { title: 'Efficiency', min: 0 }
       },
-      title: {text: label}
+      title: { text: label }
     });
 
     // Register click
@@ -84,13 +87,29 @@
 
       if (divId === "plot-present") {
         presentValues = selection;
-        console.log("✅ Present selected:", presentValues);
       } else {
         futureValues = selection;
-        console.log("✅ Future selected:", futureValues);
       }
 
-      alert(`${label} values: Equality=${pt.a.toFixed(2)}, Security=${pt.b.toFixed(2)}, Efficiency=${pt.c.toFixed(2)}`);
+      // Update the plot with the clicked marker
+      Plotly.react(divId, [{
+        type: 'scatterternary',
+        mode: 'markers',
+        a: [pt.a],
+        b: [pt.b],
+        c: [pt.c],
+        marker: { size: 12, color: 'red' },
+        name: 'Your Choice'
+      }], {
+        ternary: {
+          aaxis: { title: 'Equality', min: 0 },
+          baxis: { title: 'Security', min: 0 },
+          caxis: { title: 'Efficiency', min: 0 }
+        },
+        title: { text: label }
+      });
+
+      console.log(`✅ ${label} selected:`, selection);
     });
   }
 
@@ -112,7 +131,7 @@
       "Future Efficiency": futureValues.Efficiency
     };
 
-    fetch("YOUR_GOOGLE_APPS_SCRIPT_URL_HERE", {
+    fetch("https://script.google.com/macros/s/AKfycbzVkOjwbLgd8UGXAujtNlmSshA2Js3a0QgOs0NhpSNPR7F63ARzXz_W2cBjSXUMfgVyFg/exec", {
       method: "POST",
       body: JSON.stringify(payload),
       headers: { "Content-Type": "application/json" }
@@ -130,6 +149,7 @@
     .catch(err => alert("⚠️ Network error: " + err));
   }
 </script>
+
 
 </body>
 </html>
