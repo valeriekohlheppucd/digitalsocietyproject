@@ -62,17 +62,18 @@
   let futureValues = null;
 
   function createPlot(divId, label) {
-    // Start with a "dummy" trace so the ternary axes show up
+    // Create a ternary diagram with empty placeholder
     Plotly.newPlot(divId, [{
       type: 'scatterternary',
       mode: 'markers',
       a: [],
       b: [],
       c: [],
-      marker: { size: 12, color: 'rgba(0,0,0,0)' }, // invisible
-      showlegend: false
+      marker: { size: 12, color: 'red' },
+      name: 'Your Choice'
     }], {
       ternary: {
+        sum: 1,   // ensures values are normalized
         aaxis: { title: 'Equality', min: 0 },
         baxis: { title: 'Security', min: 0 },
         caxis: { title: 'Efficiency', min: 0 }
@@ -80,7 +81,7 @@
       title: { text: label }
     });
 
-    // Register click handler
+    // Capture clicks
     document.getElementById(divId).on('plotly_click', function(data) {
       const pt = data.points[0];
       const selection = { Equality: pt.a, Security: pt.b, Efficiency: pt.c };
@@ -91,27 +92,19 @@
         futureValues = selection;
       }
 
-      // Add or update a red dot for the clicked location
-      Plotly.addTraces(divId, {
-        type: 'scatterternary',
-        mode: 'markers',
-        a: [pt.a],
-        b: [pt.b],
-        c: [pt.c],
-        marker: { size: 12, color: 'red', symbol: 'circle' },
-        name: 'Your Choice',
-        text: [`Equality=${pt.a.toFixed(2)}, Security=${pt.b.toFixed(2)}, Efficiency=${pt.c.toFixed(2)}`],
-        hoverinfo: 'text'
-      });
-
-      // Ensure only one dot is shown (remove older ones if more than 2 traces)
-      Plotly.deleteTraces(divId, 1); 
+      // Update the dot position
+      Plotly.update(divId, {
+        a: [[pt.a]],
+        b: [[pt.b]],
+        c: [[pt.c]],
+        text: [[`Equality=${pt.a.toFixed(2)}, Security=${pt.b.toFixed(2)}, Efficiency=${pt.c.toFixed(2)}`]]
+      }, {}, [0]);
 
       console.log(`✅ ${label} selected:`, selection);
     });
   }
 
-  // Create both plots
+  // Create both ternary plots
   createPlot("plot-present", "Balance of Values Today (2025)");
   createPlot("plot-future", "Balance of Values in 2075");
 
@@ -145,7 +138,10 @@
         alert("⚠️ Error: " + data.message);
       }
     })
-    .catch(err => alert("⚠️ Network error: " + err));
+    .catch(err => {
+      console.error(err);
+      alert("⚠️ Network error — check console for details.");
+    });
   }
 </script>
 
