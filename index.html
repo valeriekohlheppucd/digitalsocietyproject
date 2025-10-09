@@ -57,74 +57,79 @@
   <!-- Submit button -->
   <button onclick="submitResponse()">Submit Response</button>
 
-  <script>
-    let presentValues = null;
-    let futureValues = null;
+<script>
+  let presentValues = null;
+  let futureValues = null;
 
-    // Function to create an empty ternary plot
-    function createPlot(divId, label) {
-      Plotly.newPlot(divId, [{
-        type: 'scatterternary',
-        mode: 'markers',
-        a: [],
-        b: [],
-        c: []
-      }], {
-        ternary: {
-          aaxis: {title: 'Equality', min: 0},
-          baxis: {title: 'Security', min: 0},
-          caxis: {title: 'Efficiency', min: 0}
-        },
-        title: {text: label}
-      });
+  function createPlot(divId, label) {
+    Plotly.newPlot(divId, [{
+      type: 'scatterternary',
+      mode: 'markers',
+      a: [],
+      b: [],
+      c: []
+    }], {
+      ternary: {
+        aaxis: {title: 'Equality', min: 0},
+        baxis: {title: 'Security', min: 0},
+        caxis: {title: 'Efficiency', min: 0}
+      },
+      title: {text: label}
+    });
 
-      // Capture click
-      document.getElementById(divId).on('plotly_click', function(data) {
-        const point = data.points[0];
-        if (divId === "plot-present") {
-          presentValues = {Equality: point.a, Security: point.b, Efficiency: point.c};
-        } else {
-          futureValues = {Equality: point.a, Security: point.b, Efficiency: point.c};
-        }
-        alert(`${label} values selected: E=${point.a}, S=${point.b}, F=${point.c}`);
-      });
-    }
+    // Register click
+    document.getElementById(divId).on('plotly_click', function(data) {
+      const pt = data.points[0];
+      const selection = { Equality: pt.a, Security: pt.b, Efficiency: pt.c };
 
-    // Create both plots
-    createPlot("plot-present", "Balance of Values Today (2025)");
-    createPlot("plot-future", "Balance of Values in 2075");
-
-    // Submit function
-    function submitResponse() {
-      if (!presentValues || !futureValues) {
-        alert("⚠️ Please click on BOTH plots before submitting!");
-        return;
+      if (divId === "plot-present") {
+        presentValues = selection;
+        console.log("✅ Present selected:", presentValues);
+      } else {
+        futureValues = selection;
+        console.log("✅ Future selected:", futureValues);
       }
 
-      const payload = {
-        "Present Equality": presentValues.Equality,
-        "Present Security": presentValues.Security,
-        "Present Efficiency": presentValues.Efficiency,
-        "Future Equality": futureValues.Equality,
-        "Future Security": futureValues.Security,
-        "Future Efficiency": futureValues.Efficiency
-      };
+      alert(`${label} values: Equality=${pt.a.toFixed(2)}, Security=${pt.b.toFixed(2)}, Efficiency=${pt.c.toFixed(2)}`);
+    });
+  }
 
-      fetch("https://script.google.com/macros/s/AKfycbzVkOjwbLgd8UGXAujtNlmSshA2Js3a0QgOs0NhpSNPR7F63ARzXz_W2cBjSXUMfgVyFg/exec", {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: { "Content-Type": "application/json" }
-      }).then(res => {
-        if (res.ok) {
-          alert("✅ Response submitted! Thank you.");
-          // Reset values after submission
-          presentValues = null;
-          futureValues = null;
-        } else {
-          alert("⚠️ Error submitting response.");
-        }
-      }).catch(err => alert("⚠️ Network error: " + err));
+  createPlot("plot-present", "Balance of Values Today (2025)");
+  createPlot("plot-future", "Balance of Values in 2075");
+
+  function submitResponse() {
+    if (!presentValues || !futureValues) {
+      alert("⚠️ Please click once inside BOTH plots before submitting!");
+      return;
     }
-  </script>
+
+    const payload = {
+      "Present Equality": presentValues.Equality,
+      "Present Security": presentValues.Security,
+      "Present Efficiency": presentValues.Efficiency,
+      "Future Equality": futureValues.Equality,
+      "Future Security": futureValues.Security,
+      "Future Efficiency": futureValues.Efficiency
+    };
+
+    fetch("YOUR_GOOGLE_APPS_SCRIPT_URL_HERE", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.result === "success") {
+        alert("✅ Response submitted! Thank you.");
+        presentValues = null;
+        futureValues = null;
+      } else {
+        alert("⚠️ Error: " + data.message);
+      }
+    })
+    .catch(err => alert("⚠️ Network error: " + err));
+  }
+</script>
+
 </body>
 </html>
