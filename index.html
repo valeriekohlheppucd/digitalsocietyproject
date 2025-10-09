@@ -32,8 +32,19 @@
     button:hover {
       background: #005bb5;
     }
-    p {
+    p, .values-display {
       text-align: center;
+    }
+    .values-display {
+      font-size: 16px;
+      margin-top: 10px;
+      color: #333;
+    }
+    .present-values {
+      color: #0073e6; /* blue */
+    }
+    .future-values {
+      color: #00b359; /* green */
     }
   </style>
 </head>
@@ -49,10 +60,12 @@
   <!-- Plot for Present -->
   <h2>Today (2025)</h2>
   <div id="plot-present" class="plot-container"></div>
+  <div id="present-values" class="values-display present-values"></div>
 
   <!-- Plot for Future -->
   <h2>The Year 2075</h2>
   <div id="plot-future" class="plot-container"></div>
+  <div id="future-values" class="values-display future-values"></div>
 
   <!-- Submit button -->
   <button onclick="submitResponse()">Submit Response</button>
@@ -61,19 +74,19 @@
   let presentValues = null;
   let futureValues = null;
 
-  function createPlot(divId, label) {
-    // Create a ternary diagram with empty placeholder
+  function createPlot(divId, label, color) {
+    // Create a ternary diagram
     Plotly.newPlot(divId, [{
       type: 'scatterternary',
       mode: 'markers',
       a: [],
       b: [],
       c: [],
-      marker: { size: 12, color: 'red' },
+      marker: { size: 12, color: color },
       name: 'Your Choice'
     }], {
       ternary: {
-        sum: 1,   // ensures values are normalized
+        sum: 1,
         aaxis: { title: 'Equality', min: 0 },
         baxis: { title: 'Security', min: 0 },
         caxis: { title: 'Efficiency', min: 0 }
@@ -84,30 +97,45 @@
     // Capture clicks
     document.getElementById(divId).on('plotly_click', function(data) {
       const pt = data.points[0];
-      const selection = { Equality: pt.a, Security: pt.b, Efficiency: pt.c };
+      const selection = { 
+        Equality: pt.a, 
+        Security: pt.b, 
+        Efficiency: pt.c 
+      };
 
+      // Update the right variable
       if (divId === "plot-present") {
         presentValues = selection;
+        document.getElementById("present-values").innerHTML = `
+          Equality: ${pt.a.toFixed(2)} | 
+          Security: ${pt.b.toFixed(2)} | 
+          Efficiency: ${pt.c.toFixed(2)}
+        `;
       } else {
         futureValues = selection;
+        document.getElementById("future-values").innerHTML = `
+          Equality: ${pt.a.toFixed(2)} | 
+          Security: ${pt.b.toFixed(2)} | 
+          Efficiency: ${pt.c.toFixed(2)}
+        `;
       }
 
-      // Update the dot position
+      // Update marker color + position dynamically
       Plotly.update(divId, {
         a: [[pt.a]],
         b: [[pt.b]],
         c: [[pt.c]],
+        marker: { color: color, size: 14 },
         text: [[`Equality=${pt.a.toFixed(2)}, Security=${pt.b.toFixed(2)}, Efficiency=${pt.c.toFixed(2)}`]]
       }, {}, [0]);
-
-      console.log(`✅ ${label} selected:`, selection);
     });
   }
 
-  // Create both ternary plots
-  createPlot("plot-present", "Balance of Values Today (2025)");
-  createPlot("plot-future", "Balance of Values in 2075");
+  // Create both ternary plots with different colors
+  createPlot("plot-present", "Balance of Values Today (2025)", "#0073e6");
+  createPlot("plot-future", "Balance of Values in 2075", "#00b359");
 
+  // Submit responses to Google Script
   function submitResponse() {
     if (!presentValues || !futureValues) {
       alert("⚠️ Please click once inside BOTH plots before submitting!");
@@ -134,6 +162,8 @@
         alert("✅ Response submitted! Thank you.");
         presentValues = null;
         futureValues = null;
+        document.getElementById("present-values").innerHTML = "";
+        document.getElementById("future-values").innerHTML = "";
       } else {
         alert("⚠️ Error: " + data.message);
       }
@@ -144,7 +174,5 @@
     });
   }
 </script>
-
-
 </body>
 </html>
